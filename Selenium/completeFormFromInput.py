@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 # use driver
-service = Service(executable_path="chromedriver.exe")
+service = Service(executable_path="C:\\Users\\joega\\Documents\\Coding & programming\\chromedriver.exe")
 driver = webdriver.Chrome(service=service) 
 
 
