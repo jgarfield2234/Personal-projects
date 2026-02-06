@@ -8,7 +8,7 @@ db = mysql.connector.connect(host="localhost", user="root", password="", databas
 
 
 
-Choices = ["add", "view", "remove", "exit"] # valid user choices
+Choices = ["add", "view", "remove", "lookup", "exit"] # valid user choices
 
 
 # Checks if connected to database
@@ -17,15 +17,6 @@ if db.is_connected():
 else:
     print("Failed to connect to the database.")
 
-
-mycursor = db.cursor()
-mycursor.execute(f"SELECT Name FROM fooditems WHERE Name = 'apple'")
-result = mycursor.fetchone()
-
-if result:
-    print("Item exists in the database.")
-else:
-    print("Item does not exist in the database.")
 
 # Functions
 
@@ -38,31 +29,71 @@ def exit_program():
 # adds item to list
 def add_item():
     item = input("Enter the item to add: ").strip().lower()
+    amount = input("Enter the amount of the item: ").strip()
+    
     mycursor = db.cursor()
-    mycursor.execute(f"INSERT INTO fooditems (Name) VALUES ('{item}')")
-    db.commit()
-    print(f"Added item: {item}")
+    mycursor.execute("SELECT 1 FROM fooditems WHERE Name = %s", (item,))
+    exists = mycursor.fetchone() is not None
+
+    if exists:
+        mycursor.execute("SELECT * FROM `fooditems` WHERE Name = %s", (item,))
+        for x in mycursor:
+            amount = int(amount) + int(x[2])
+            mycursor.execute("UPDATE fooditems SET Amount = %s WHERE Name = %s", (amount, item))
+            db.commit()
+            print(f"Updated item: {item}. New amount: {amount}")
+
+    else:
+        mycursor.execute(f"INSERT INTO fooditems (name, Amount) VALUES ('{item}', '{amount}')")
+        db.commit()
+        print(f"Added {amount} {item}")
+
 
 # view items in list
 def view_items():
     print("Existing items:")
     mycursor = db.cursor()
-    mycursor.execute("SELECT Name FROM fooditems")
+    mycursor.execute("SELECT Name, Amount FROM fooditems")
     for x in mycursor:
-        print(x[0])    
+        print(x[1], x[0])    
 
 # removes item from list
 def remove_item():
     item = input("Enter the item to remove: ").strip().lower()
+    amount = input("Enter the amount to remove: ").strip()
+
     mycursor = db.cursor()
-    mycursor.execute(f"SELECT Name FROM fooditems WHERE Name = '{item}'")
-    result = mycursor.fetchone()
-    if result:
-        mycursor.execute(f"DELETE FROM fooditems WHERE Name = '{item}'")
-        db.commit()
-        print(f"Removed item: {item}")
+    mycursor.execute("SELECT 1 FROM fooditems WHERE Name = %s", (item,))
+    exists = mycursor.fetchone() is not None
+
+    if exists:
+        mycursor.execute("SELECT * FROM `fooditems` WHERE Name = %s", (item,))
+        for x in mycursor:
+            amount = int(x[2]) - int(amount)
+
+            if amount > 0:
+                mycursor.execute("UPDATE fooditems SET Amount = %s WHERE Name = %s", (amount, item))
+                db.commit()
+                print(f"Updated item: {item}. New amount: {amount}")
+
+            else:
+                mycursor.execute("DELETE FROM fooditems WHERE Name = %s", (item,))
+                db.commit()
+                print(f"Removed item: {item}")
     else:
-        print(f"Item '{item}' does not exist in the database.")
+        print(f"Item {item} does not exist.")
+
+# lookup item in list
+def lookup_item():
+    item = input("Name of item to lookup: ").strip().lower()
+    mycursor = db.cursor()
+    mycursor.execute("SELECT 1 FROM fooditems WHERE Name = %s", (item,))
+    exists = mycursor.fetchone() is not None
+
+    if exists:
+        print(f"{item} exists in the list.")
+    else:
+        print(f"{item} does not exist in the list.")
 
     
 # Main program loop
@@ -70,7 +101,7 @@ while True:
 
 # Gets user choice
     while True:
-        choice = input("Enter your choice: Add, View, Remove or Exit ").strip().lower()
+        choice = input("Enter your choice: Add, View, Remove, Lookup or Exit ").strip().lower()
         if choice in Choices:
             print(f"Choice: {choice}" )
             break
@@ -88,3 +119,5 @@ while True:
         view_items()
     elif choice == "remove":
         remove_item() 
+    elif choice == "lookup":
+        lookup_item()
