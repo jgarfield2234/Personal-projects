@@ -27,9 +27,9 @@ def exit_program():
     return
 
 # adds item to list
-def add_item():
-    item = input("Enter the item to add: ").strip().lower()
-    amount = input("Enter the amount of the item: ").strip()
+def add_item(item, amount):
+    # item = input("Enter the item to add: ").strip().lower()            Only used for text based interface, not GUI
+    # amount = input("Enter the amount of the item: ").strip()
     
     mycursor = db.cursor()
     mycursor.execute("SELECT 1 FROM fooditems WHERE Name = %s", (item,))
@@ -58,9 +58,9 @@ def view_items():
         print(x[1], x[0])    
 
 # removes item from list
-def remove_item():
-    item = input("Enter the item to remove: ").strip().lower()
-    amount = input("Enter the amount to remove: ").strip()
+def remove_item(item, amount):
+    # item = input("Enter the item to remove: ").strip().lower()            Only used for text based interface, not GUI
+    # amount = input("Enter the amount to remove: ").strip()
 
     mycursor = db.cursor()
     mycursor.execute("SELECT 1 FROM fooditems WHERE Name = %s", (item,))
@@ -90,34 +90,40 @@ def lookup_item():
     mycursor.execute("SELECT 1 FROM fooditems WHERE Name = %s", (item,))
     exists = mycursor.fetchone() is not None
 
+    print(mycursor.fetchone())
+
     if exists:
         print(f"{item} exists in the list.")
     else:
         print(f"{item} does not exist in the list.")
 
-    
-# Main program loop
-while True:
 
-# Gets user choice
-    while True:
-        choice = input("Enter your choice: Add, View, Remove, Lookup or Exit ").strip().lower()
-        if choice in Choices:
-            print(f"Choice: {choice}" )
-            break
-        else:
-            print("Invalid input, please choose again")
+# --------------------- Text basexd interface ---------------------
+# Comment all of below out to use the text based interface instead of the GUI
 
-# Executes user choice
 
-    if choice == "exit":
-        exit_program()
-        break
-    elif choice == "add":
-        add_item()
-    elif choice == "view":
-        view_items()
-    elif choice == "remove":
-        remove_item() 
-    elif choice == "lookup":
-        lookup_item()
+# # Main program loop
+# while True:
+
+# # Gets user choice
+#     while True:
+#         choice = input("Enter your choice: Add, View, Remove, Lookup or Exit ").strip().lower()
+#         if choice in Choices:
+#             print(f"Choice: {choice}" )
+#             break
+#         else:
+#             print("Invalid input, please choose again")
+
+# # Executes user choice
+
+#     if choice == "exit":
+#         exit_program()
+#         break
+#     elif choice == "add":
+#         add_item()
+#     elif choice == "view":
+#         view_items()
+#     elif choice == "remove":
+#         remove_item() 
+#     elif choice == "lookup":
+#         lookup_item()
