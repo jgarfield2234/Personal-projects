@@ -54,8 +54,10 @@ def view_items():
     print("Existing items:")
     mycursor = db.cursor()
     mycursor.execute("SELECT Name, Amount FROM fooditems")
-    for x in mycursor:
-        print(x[1], x[0])    
+    itemsList = mycursor.fetchall()
+    for x in itemsList:
+        print(x[1], x[0])  
+    return itemsList  
 
 # removes item from list
 def remove_item(item, amount):
